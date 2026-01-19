@@ -1,0 +1,44 @@
+{
+  "name": "commute",
+  "version": "1.0.0",
+  "description": "출퇴근 기록 프로그램 (안면인식)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder",
+    "download-models": "node download-models.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "face-api.js": "^0.22.2",
+    "mongodb": "^7.0.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "com.commute.app",
+    "productName": "출퇴근",
+    "files": [
+      "**/*",
+      "models/**/*",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "models",
+        "to": "models"
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "signAndEditExecutable": false
+    },
+    "forceCodeSigning": false,
+    "portable": {
+      "artifactName": "출퇴근.exe"
+    }
+  }
+}

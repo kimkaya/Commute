@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:;">
+  <title>출퇴근</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>출퇴근</h1>
+      <p id="currentDate" class="date"></p>
+      <p id="currentTime" class="time"></p>
+    </header>
+
+    <!-- 탭 메뉴 -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="main">출퇴근</button>
+      <button class="tab-btn" data-tab="register">얼굴 등록</button>
+    </div>
+
+    <!-- 메인 탭: 출퇴근 -->
+    <div id="mainTab" class="tab-content active">
+      <section class="camera-section">
+        <div class="video-container">
+          <video id="video" autoplay muted playsinline></video>
+          <canvas id="overlay"></canvas>
+          <div id="recognizedName" class="recognized-name"></div>
+        </div>
+        <p id="cameraStatus" class="camera-status">카메라 로딩중...</p>
+      </section>
+
+      <section class="today-status">
+        <h2><span id="currentUserName">미인식</span>님의 오늘 기록</h2>
+        <div class="status-grid">
+          <div class="status-item">
+            <span class="label">출근</span>
+            <span id="checkInTime" class="value">--:--</span>
+          </div>
+          <div class="status-item">
+            <span class="label">퇴근</span>
+            <span id="checkOutTime" class="value">--:--</span>
+          </div>
+          <div class="status-item">
+            <span class="label">휴식</span>
+            <span id="breakTime" class="value">0분</span>
+          </div>
+          <div class="status-item highlight">
+            <span class="label">실근무</span>
+            <span id="workDuration" class="value">--:--</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="buttons">
+        <button id="checkInBtn" class="btn btn-checkin" disabled>출근</button>
+        <button id="breakBtn" class="btn btn-break" disabled>휴식</button>
+        <button id="checkOutBtn" class="btn btn-checkout" disabled>퇴근</button>
+      </section>
+
+      <div id="breakStatus" class="break-status hidden">
+        <span class="break-icon">&#9749;</span>
+        <span>휴식중... <span id="breakTimer">00:00</span></span>
+      </div>
+    </div>
+
+    <!-- 등록 탭: 얼굴 등록 -->
+    <div id="registerTab" class="tab-content">
+      <section class="register-section">
+        <div class="video-container">
+          <video id="registerVideo" autoplay muted playsinline></video>
+          <canvas id="registerOverlay"></canvas>
+        </div>
+        <div class="register-form">
+          <input type="text" id="userName" placeholder="이름을 입력하세요" maxlength="20">
+          <button id="registerBtn" class="btn btn-register" disabled>얼굴 등록</button>
+        </div>
+        <p id="registerStatus" class="register-status"></p>
+      </section>
+    </div>
+  </div>
+
+  <script src="./node_modules/face-api.js/dist/face-api.min.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>
