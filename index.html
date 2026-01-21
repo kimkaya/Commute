@@ -3,82 +3,301 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self'; worker-src 'self' blob:;">
   <title>출퇴근</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>출퇴근</h1>
-      <p id="currentDate" class="date"></p>
-      <p id="currentTime" class="time"></p>
+    <header class="main-header">
+      <div class="header-left">
+        <h1>출퇴근 관리 시스템</h1>
+        <div class="datetime-info">
+          <p id="currentDate" class="date"></p>
+          <p id="currentTime" class="time"></p>
+        </div>
+      </div>
+      <div class="header-right">
+        <!-- 탭 메뉴 -->
+        <div class="tabs">
+          <button class="tab-btn active" data-tab="main">출퇴근</button>
+          <button class="tab-btn" data-tab="register">얼굴 등록</button>
+        </div>
+      </div>
     </header>
-
-    <!-- 탭 메뉴 -->
-    <div class="tabs">
-      <button class="tab-btn active" data-tab="main">출퇴근</button>
-      <button class="tab-btn" data-tab="register">얼굴 등록</button>
-    </div>
 
     <!-- 메인 탭: 출퇴근 -->
     <div id="mainTab" class="tab-content active">
-      <section class="camera-section">
-        <div class="video-container">
-          <video id="video" autoplay muted playsinline></video>
-          <canvas id="overlay"></canvas>
-          <div id="recognizedName" class="recognized-name"></div>
+      <div class="main-layout">
+        <!-- 왼쪽: 카메라 영역 -->
+        <div class="left-panel">
+          <section class="camera-section">
+            <div class="video-container">
+              <video id="video" autoplay muted playsinline></video>
+              <canvas id="overlay"></canvas>
+              <div id="recognizedName" class="recognized-name"></div>
+            </div>
+            <p id="cameraStatus" class="camera-status">카메라 로딩중...</p>
+            <p id="authStatus" class="auth-status"></p>
+            
+            <div id="breakStatus" class="break-status hidden">
+              <span class="break-icon">&#9749;</span>
+              <span>휴식중... <span id="breakTimer">00:00</span></span>
+            </div>
+          </section>
         </div>
-        <p id="cameraStatus" class="camera-status">카메라 로딩중...</p>
-      </section>
 
-      <section class="today-status">
-        <h2><span id="currentUserName">미인식</span>님의 오늘 기록</h2>
-        <div class="status-grid">
-          <div class="status-item">
-            <span class="label">출근</span>
-            <span id="checkInTime" class="value">--:--</span>
-          </div>
-          <div class="status-item">
-            <span class="label">퇴근</span>
-            <span id="checkOutTime" class="value">--:--</span>
-          </div>
-          <div class="status-item">
-            <span class="label">휴식</span>
-            <span id="breakTime" class="value">0분</span>
-          </div>
-          <div class="status-item highlight">
-            <span class="label">실근무</span>
-            <span id="workDuration" class="value">--:--</span>
-          </div>
+        <!-- 오른쪽: 상태 및 버튼 영역 -->
+        <div class="right-panel">
+          <section class="today-status">
+            <h2><span id="currentUserName">미인식</span>님의 오늘 기록</h2>
+            <div class="status-grid">
+              <div class="status-item">
+                <span class="label">출근</span>
+                <span id="checkInTime" class="value">--:--</span>
+              </div>
+              <div class="status-item">
+                <span class="label">퇴근</span>
+                <span id="checkOutTime" class="value">--:--</span>
+              </div>
+              <div class="status-item">
+                <span class="label">휴식</span>
+                <span id="breakTime" class="value">0분</span>
+              </div>
+              <div class="status-item highlight">
+                <span class="label">실근무</span>
+                <span id="workDuration" class="value">--:--</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="buttons">
+            <button id="checkInBtn" class="btn btn-checkin" disabled>
+              <span class="btn-icon">🏢</span>
+              <span class="btn-text">출근</span>
+            </button>
+            <button id="breakBtn" class="btn btn-break" disabled>
+              <span class="btn-icon">☕</span>
+              <span class="btn-text">휴식</span>
+            </button>
+            <button id="checkOutBtn" class="btn btn-checkout" disabled>
+              <span class="btn-icon">🏃</span>
+              <span class="btn-text">퇴근</span>
+            </button>
+          </section>
+
+          <!-- 긴급/수동 입력 버튼들 -->
+          <section class="emergency-section">
+            <button id="emergencyBtn" class="btn btn-emergency">
+              <span class="btn-icon">🚨</span>
+              <span class="btn-text">긴급 수동입력</span>
+            </button>
+            <button id="manualAuthBtn" class="btn btn-manual">
+              <span class="btn-icon">🔑</span>
+              <span class="btn-text">비밀번호 인증</span>
+            </button>
+            <div id="connectionStatus" class="connection-status">
+              <span id="dbStatus" class="status-indicator online">🟢 DB 연결됨</span>
+              <span id="networkStatus" class="status-indicator online">🟢 온라인</span>
+            </div>
+          </section>
         </div>
-      </section>
-
-      <section class="buttons">
-        <button id="checkInBtn" class="btn btn-checkin" disabled>출근</button>
-        <button id="breakBtn" class="btn btn-break" disabled>휴식</button>
-        <button id="checkOutBtn" class="btn btn-checkout" disabled>퇴근</button>
-      </section>
-
-      <div id="breakStatus" class="break-status hidden">
-        <span class="break-icon">&#9749;</span>
-        <span>휴식중... <span id="breakTimer">00:00</span></span>
       </div>
     </div>
 
     <!-- 등록 탭: 얼굴 등록 -->
     <div id="registerTab" class="tab-content">
-      <section class="register-section">
-        <div class="video-container">
-          <video id="registerVideo" autoplay muted playsinline></video>
-          <canvas id="registerOverlay"></canvas>
+      <div class="register-layout">
+        <!-- 왼쪽: 카메라 영역 -->
+        <div class="register-camera">
+          <section class="register-section">
+            <div class="video-container">
+              <video id="registerVideo" autoplay muted playsinline></video>
+              <canvas id="registerOverlay"></canvas>
+            </div>
+            <p id="registerStatus" class="register-status"></p>
+          </section>
         </div>
-        <div class="register-form">
-          <input type="text" id="userName" placeholder="이름을 입력하세요" maxlength="20">
-          <button id="registerBtn" class="btn btn-register" disabled>얼굴 등록</button>
+
+        <!-- 오른쪽: 등록 폼 -->
+        <div class="register-form-panel">
+          <h2>새 직원 등록</h2>
+          <div class="register-form">
+            <div class="form-group">
+              <label>이름</label>
+              <input type="text" id="userName" placeholder="이름을 입력하세요" maxlength="20">
+            </div>
+            <div class="form-group">
+              <label>비밀번호</label>
+              <input type="password" id="userPassword" placeholder="비밀번호 (4자리 이상)" maxlength="20">
+            </div>
+            <div class="form-group">
+              <label>비밀번호 확인</label>
+              <input type="password" id="userPasswordConfirm" placeholder="비밀번호 확인" maxlength="20">
+            </div>
+            
+            <!-- 개인정보 수집/이용 동의 -->
+            <div class="privacy-consent-section">
+              <div class="consent-header">
+                <h3>📋 개인정보 수집·이용 동의</h3>
+              </div>
+              
+              <div class="consent-content">
+                <div class="consent-item">
+                  <strong>수집 목적:</strong> 출퇴근 관리 및 근태 관리
+                </div>
+                <div class="consent-item">
+                  <strong>수집 항목:</strong> 이름, 얼굴 생체정보, 출입 기록
+                </div>
+                <div class="consent-item">
+                  <strong>보유 기간:</strong> 퇴직 시까지 (퇴직 후 즉시 파기)
+                </div>
+                <div class="consent-item">
+                  <strong>제3자 제공:</strong> 없음 (법령에 의한 경우 제외)
+                </div>
+              </div>
+              
+              <div class="consent-checkboxes">
+                <label class="consent-checkbox">
+                  <input type="checkbox" id="privacyConsent" required>
+                  <span class="checkmark"></span>
+                  <span class="consent-text">개인정보 수집·이용에 <strong>동의합니다</strong></span>
+                </label>
+                
+                <label class="consent-checkbox">
+                  <input type="checkbox" id="biometricConsent" required>
+                  <span class="checkmark"></span>
+                  <span class="consent-text">생체정보(얼굴) 수집·이용에 <strong>동의합니다</strong></span>
+                </label>
+                
+                <label class="consent-checkbox">
+                  <input type="checkbox" id="dataRetentionConsent" required>
+                  <span class="checkmark"></span>
+                  <span class="consent-text">퇴직 시까지 데이터 보관에 <strong>동의합니다</strong></span>
+                </label>
+              </div>
+              
+              <div class="consent-note">
+                <p>※ 동의를 거부하실 수 있으나, 출퇴근 시스템 이용이 제한됩니다.</p>
+                <p>※ 수집된 개인정보는 암호화되어 안전하게 보관됩니다.</p>
+              </div>
+            </div>
+            
+            <button id="registerBtn" class="btn btn-register" disabled>
+              <span class="btn-icon">👤</span>
+              <span class="btn-text">얼굴 등록</span>
+            </button>
+            <p class="register-hint">* 새 기기에서 사용 시 비밀번호가 필요합니다</p>
+          </div>
         </div>
-        <p id="registerStatus" class="register-status"></p>
-      </section>
+      </div>
+    </div>
+  </div>
+
+  <!-- 비밀번호 확인 모달 -->
+  <div id="passwordModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>기기 인증</h3>
+      <p id="passwordModalUser" class="modal-user"></p>
+      <p class="modal-desc">새 기기에서 접속했습니다.<br>비밀번호를 입력하세요.</p>
+      <input type="password" id="devicePassword" placeholder="비밀번호" maxlength="20">
+      <p id="passwordModalError" class="modal-error"></p>
+      <div class="modal-buttons">
+        <button id="verifyPasswordBtn" class="btn btn-primary">확인</button>
+        <button id="cancelPasswordBtn" class="btn btn-secondary">취소</button>
+      </div>
+      <p class="modal-hint">비밀번호를 잊으셨다면 관리자에게 문의하세요.</p>
+    </div>
+  </div>
+
+  <!-- 긴급 수동 입력 모달 -->
+  <div id="emergencyModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>🚨 긴급 수동 출퇴근</h3>
+      <p class="modal-desc">시스템 오류/카메라 고장 시 사용하는 긴급 모드입니다.</p>
+      
+      <div class="form-group">
+        <label>직원 선택</label>
+        <select id="emergencyUserSelect">
+          <option value="">직원을 선택하세요</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>비밀번호 확인</label>
+        <input type="password" id="emergencyPassword" placeholder="해당 직원의 비밀번호" maxlength="20">
+      </div>
+      
+      <div class="form-group">
+        <label>사유</label>
+        <select id="emergencyReason">
+          <option value="camera_failure">카메라 고장</option>
+          <option value="system_error">시스템 오류</option>
+          <option value="network_issue">네트워크 문제</option>
+          <option value="other">기타</option>
+        </select>
+      </div>
+      
+      <p id="emergencyError" class="modal-error"></p>
+      
+      <div class="modal-buttons">
+        <button id="emergencyCheckInBtn" class="btn btn-checkin">긴급 출근</button>
+        <button id="emergencyBreakBtn" class="btn btn-break">긴급 휴식</button>
+        <button id="emergencyCheckOutBtn" class="btn btn-checkout">긴급 퇴근</button>
+      </div>
+      
+      <div class="modal-buttons">
+        <button id="cancelEmergencyBtn" class="btn btn-secondary">취소</button>
+      </div>
+      
+      <p class="modal-hint">⚠️ 긴급 입력 기록은 관리자 승인이 필요하며 감사 로그에 기록됩니다.</p>
+    </div>
+  </div>
+
+  <!-- 수동 비밀번호 인증 모달 -->
+  <div id="manualAuthModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>🔑 수동 비밀번호 인증</h3>
+      <p class="modal-desc">카메라 없이 비밀번호만으로 인증합니다.</p>
+      
+      <div class="form-group">
+        <label>직원 선택</label>
+        <select id="manualUserSelect">
+          <option value="">직원을 선택하세요</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>비밀번호</label>
+        <input type="password" id="manualPassword" placeholder="비밀번호" maxlength="20">
+      </div>
+      
+      <p id="manualAuthError" class="modal-error"></p>
+      
+      <div class="modal-buttons">
+        <button id="manualAuthVerifyBtn" class="btn btn-primary">인증</button>
+        <button id="cancelManualAuthBtn" class="btn btn-secondary">취소</button>
+      </div>
+      
+      <p class="modal-hint">인증 성공 시 정상 출퇴근이 가능합니다.</p>
+    </div>
+  </div>
+
+  <!-- 오프라인 알림 모달 -->
+  <div id="offlineModal" class="modal hidden">
+    <div class="modal-content">
+      <h3>📴 오프라인 모드</h3>
+      <p class="modal-desc">네트워크 연결이 끊어졌습니다.<br>데이터를 로컬에 저장하고 연결 복구 시 자동 동기화됩니다.</p>
+      
+      <div class="offline-stats">
+        <p><strong>대기 중인 기록:</strong> <span id="offlineCount">0</span>개</p>
+        <p><strong>마지막 동기화:</strong> <span id="lastSync">-</span></p>
+      </div>
+      
+      <div class="modal-buttons">
+        <button id="continueOfflineBtn" class="btn btn-primary">오프라인 계속</button>
+        <button id="retryConnectionBtn" class="btn btn-secondary">다시 연결</button>
+      </div>
     </div>
   </div>
 

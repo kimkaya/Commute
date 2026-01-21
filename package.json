@@ -11,6 +11,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "dotenv": "^16.3.1",
     "face-api.js": "^0.22.2",
     "mongodb": "^7.0.0"
   },
@@ -24,12 +25,17 @@
     "files": [
       "**/*",
       "models/**/*",
-      "node_modules/**/*"
+      "node_modules/**/*",
+      ".env"
     ],
     "extraResources": [
       {
         "from": "models",
         "to": "models"
+      },
+      {
+        "from": ".env",
+        "to": ".env"
       }
     ],
     "win": {
